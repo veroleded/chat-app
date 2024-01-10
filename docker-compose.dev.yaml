@@ -5,7 +5,7 @@ services:
     image: node:20.2.0
     container_name: backend
     working_dir: /app
-    command: npm run start:prod
+    command: npm run start:dev
     volumes:
       - ./backend:/app
     ports:
@@ -19,8 +19,11 @@ services:
   postgres:
     image: postgres:latest
     container_name: postgres
+    restart: unless-stopped
     env_file:
       - .env
+    ports:
+      - "5431:5432"
     networks:
       - database
 
