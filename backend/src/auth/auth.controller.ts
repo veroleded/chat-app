@@ -13,10 +13,10 @@ import { AuthService } from './auth.service';
 import { Tokens } from './interfaces';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
-import { Cookies, UserAgent } from '@common/decorators';
+import { Cookies, Public, UserAgent } from '@common/decorators';
 
 const REFRESH_TOKEN = 'refreshtoken';
-
+@Public()
 @Controller('auth')
 export class AuthController {
   constructor(
@@ -41,7 +41,6 @@ export class AuthController {
     @Res() res: Response,
     @UserAgent() agent: string,
   ) {
-    console.log(agent);
     const tokens = await this.authService.login(dto, agent);
 
     if (!tokens) {
