@@ -21,7 +21,11 @@
       "@database": ["src/database"],
       "@database/*": ["src/database/*"],
       "@user": ["src/user"],
-      "@user/*": ["src/user/*"]
+      "@user/*": ["src/user/*"],
+      "@auth": ["src/auth"],
+      "@auth/*": ["src/auth/*"],
+      "@common": ["src/libs/common/src"],
+      "@common/*": ["src/libs/common/src/*"]
     }
   }
 }

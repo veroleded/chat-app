@@ -19,8 +19,8 @@ export class UserController {
   }
 
   @Get(':idOrEmail')
-  findOne(@Param('idOrEmail') idOrEmail: string) {
-    return this.userService.findOne(idOrEmail);
+  async findOne(@Param('idOrEmail') idOrEmail: string) {
+    return await this.userService.findOne(idOrEmail);
   }
 
   @Delete(':id')

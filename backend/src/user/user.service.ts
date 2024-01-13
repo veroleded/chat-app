@@ -1,18 +1,18 @@
 import { DatabaseService } from '@database/database.service';
 import { Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
-import { genSaltSync, hashSync } from 'bcrypt';
+import * as argon2 from 'argon2';
 
 @Injectable()
 export class UserService {
   constructor(private readonly databaseService: DatabaseService) {}
 
-  create(user: Partial<User>) {
+  async create(user: Partial<User>) {
     const hashedPassword = this.hashPassword(user.password);
     return this.databaseService.user.create({
       data: {
         email: user.email,
-        password: hashedPassword,
+        password: await hashedPassword,
         name: user.name,
         roles: ['USER'],
       },
@@ -31,7 +31,8 @@ export class UserService {
     return this.databaseService.user.delete({ where: { id: id } });
   }
 
-  private hashPassword(password: string) {
-    return hashSync(password, genSaltSync(10));
+  private async hashPassword(password: string) {
+    const hash = await argon2.hash(password);
+    return hash;
   }
 }
