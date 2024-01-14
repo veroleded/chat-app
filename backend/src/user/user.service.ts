@@ -1,6 +1,7 @@
+import { JwtPayload } from '@auth/interfaces';
 import { DatabaseService } from '@database/database.service';
-import { Injectable } from '@nestjs/common';
-import { User } from '@prisma/client';
+import { ForbiddenException, Injectable } from '@nestjs/common';
+import { Roles, User } from '@prisma/client';
 import * as argon2 from 'argon2';
 
 @Injectable()
@@ -27,8 +28,16 @@ export class UserService {
     });
   }
 
-  delete(id: string) {
-    return this.databaseService.user.delete({ where: { id: id } });
+  async delete(id: string, user: JwtPayload) {
+    if (user.id !== id && !user.roles.includes(Roles.ADMIN)) {
+      throw new ForbiddenException();
+    }
+
+    const deletedUser = await this.databaseService.user.delete({
+      where: { id: id },
+    });
+
+    return deletedUser;
   }
 
   private async hashPassword(password: string) {

@@ -20,7 +20,7 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
-  roles     Role[]
+  roles     Roles[]
   Token     Token[]
 
   @@map("users")
@@ -29,14 +29,14 @@ model User {
 model Token {
   token     String   @unique
   exp       DateTime
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String   @map("user_id")
   userAgent String   @map("user_agent")
 
   @@map("tokens")
 }
 
-enum Role {
+enum Roles {
   ADMIN
   USER
 }

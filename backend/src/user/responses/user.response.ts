@@ -10,7 +10,7 @@ export class UserResponse implements User {
   password: string;
   createdAt: Date;
   updatedAt: Date;
-  roles: $Enums.Role[];
+  roles: $Enums.Roles[];
 
   constructor(user: User) {
     Object.assign(this, user);
