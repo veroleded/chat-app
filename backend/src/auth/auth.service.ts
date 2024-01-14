@@ -56,6 +56,10 @@ export class AuthService {
     return await this.generateTokens(user, agent);
   }
 
+  async deleteRefreshToken(token: string) {
+    return this.databaseService.token.delete({ where: { token } });
+  }
+
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
     const token = await this.databaseService.token.findUnique({
       where: { token: refreshToken },
