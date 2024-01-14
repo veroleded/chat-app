@@ -43,7 +43,7 @@ export class AuthService {
 
   async login(dto: LoginDto, agent: string): Promise<Tokens> {
     const user: User = await this.userService
-      .findOne(dto.email)
+      .findOne(dto.email, true)
       .catch((error) => {
         this.logger.error(error);
         return null;
@@ -77,9 +77,7 @@ export class AuthService {
       throw new UnauthorizedException();
     }
 
-    const user = await this.databaseService.user.findUnique({
-      where: { id: token.userId },
-    });
+    const user = await this.userService.findOne(token.userId);
 
     const tokens = await this.generateTokens(user, agent);
     return tokens;
