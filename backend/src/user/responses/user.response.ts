@@ -8,6 +8,10 @@ export class UserResponse implements User {
 
   @Exclude()
   password: string;
+
+  @Exclude()
+  provider: $Enums.Provider;
+
   createdAt: Date;
   updatedAt: Date;
   roles: $Enums.Roles[];

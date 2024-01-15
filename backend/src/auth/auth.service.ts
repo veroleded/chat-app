@@ -1,5 +1,7 @@
 import {
   ConflictException,
+  HttpException,
+  HttpStatus,
   Injectable,
   Logger,
   UnauthorizedException,
@@ -8,7 +10,7 @@ import { LoginDto, RegistrationUserDto } from './dto';
 import { UserService } from '@user/user.service';
 import { Tokens } from './interfaces';
 import { JwtService } from '@nestjs/jwt';
-import { Token, User } from '@prisma/client';
+import { Provider, Token, User } from '@prisma/client';
 import { DatabaseService } from '@database/database.service';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
@@ -83,6 +85,31 @@ export class AuthService {
     return tokens;
   }
 
+  async googleAuth(email: string, agent: string) {
+    const userExist = await this.userService.findOne(email);
+
+    if (userExist) {
+      console.log({ userExist });
+      return this.generateTokens(userExist, agent);
+    }
+
+    const user = await this.userService
+      .create({ email, provider: Provider.GOOGLE })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+
+    if (!user) {
+      throw new HttpException(
+        `Failed to create a user with email ${email} in Google auth`,
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return await this.generateTokens(user, agent);
+  }
+
   private async getRefreshToken(userId: string, agent: string): Promise<Token> {
     const _token = await this.databaseService.token.findFirst({
       where: { userId, userAgent: agent },
@@ -105,14 +132,12 @@ export class AuthService {
   }
 
   private async generateTokens(user: User, agent: string): Promise<Tokens> {
-    const accessToken =
-      'Bearer ' +
-      this.jwtService.sign({
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        roles: user.roles,
-      });
+    const accessToken = this.jwtService.sign({
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      roles: user.roles,
+    });
 
     const refreshToken = await this.getRefreshToken(user.id, agent);
 

@@ -17,7 +17,9 @@ export class UserService {
   ) {}
 
   async create(user: Partial<User>) {
-    const hashedPassword = this.hashPassword(user.password);
+    const hashedPassword = user?.password
+      ? this.hashPassword(user.password)
+      : null;
     return this.databaseService.user.create({
       data: {
         email: user.email,
