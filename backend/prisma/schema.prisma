@@ -44,5 +44,6 @@ enum Roles {
 
 enum Provider {
   GOOGLE
-  Yandex
+  YANDEX
+  ORIGIN
 }

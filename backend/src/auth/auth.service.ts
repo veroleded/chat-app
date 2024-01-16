@@ -85,16 +85,22 @@ export class AuthService {
     return tokens;
   }
 
-  async googleAuth(email: string, agent: string) {
+  async providerAuth(email: string, agent: string, provider: Provider) {
     const userExist = await this.userService.findOne(email);
 
     if (userExist) {
-      console.log({ userExist });
-      return this.generateTokens(userExist, agent);
+      const updatedUser = await this.userService
+        .updateOnProvider({ email, provider })
+        .catch((err) => {
+          this.logger.error(err);
+          return null;
+        });
+
+      return this.generateTokens(updatedUser, agent);
     }
 
     const user = await this.userService
-      .create({ email, provider: Provider.GOOGLE })
+      .create({ email, provider })
       .catch((err) => {
         this.logger.error(err);
         return null;
@@ -102,7 +108,7 @@ export class AuthService {
 
     if (!user) {
       throw new HttpException(
-        `Failed to create a user with email ${email} in Google auth`,
+        `Failed to create a user`,
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -132,14 +138,14 @@ export class AuthService {
   }
 
   private async generateTokens(user: User, agent: string): Promise<Tokens> {
+    const refreshToken = await this.getRefreshToken(user.id, agent);
+
     const accessToken = this.jwtService.sign({
       id: user.id,
       email: user.email,
       name: user.name,
       roles: user.roles,
     });
-
-    const refreshToken = await this.getRefreshToken(user.id, agent);
 
     return { accessToken, refreshToken };
   }

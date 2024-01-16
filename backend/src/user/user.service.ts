@@ -4,7 +4,7 @@ import { DatabaseService } from '@database/database.service';
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { Roles, User } from '@prisma/client';
+import { Provider, Roles, User } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { Cache } from 'cache-manager';
 
@@ -20,14 +20,33 @@ export class UserService {
     const hashedPassword = user?.password
       ? this.hashPassword(user.password)
       : null;
+
     return this.databaseService.user.create({
       data: {
         email: user.email,
         password: await hashedPassword,
         name: user.name,
         roles: ['USER'],
+        provider: user.provider ?? Provider.ORIGIN,
       },
     });
+  }
+
+  async updateOnProvider(user: Partial<User>) {
+    const updatedUser = await this.databaseService.user.update({
+      where: { email: user.email },
+      data: {
+        provider: user.provider,
+        roles: user.roles,
+      },
+    });
+
+    await Promise.all([
+      this.cacheManager.set(updatedUser.id, updatedUser),
+      this.cacheManager.set(updatedUser.email, updatedUser),
+    ]);
+
+    return updatedUser;
   }
 
   async findOne(idOrEmail: string, isReset = false) {

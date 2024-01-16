@@ -22,8 +22,10 @@ import { Cookies, Public, UserAgent } from '@common/decorators';
 import { UserResponse } from '@user/responses';
 import { GoogleGuard } from './guards/google.guard';
 import { HttpService } from '@nestjs/axios';
-import { firstValueFrom, mergeMap } from 'rxjs';
+import { firstValueFrom, map, mergeMap } from 'rxjs';
 import { handleTimeoutAndErrors } from '@common/helpers';
+import { YandexGuard } from './guards/yandex.guard';
+import { Provider } from '@prisma/client';
 
 const REFRESH_TOKEN = 'refreshtoken';
 @Public()
@@ -114,8 +116,6 @@ export class AuthController {
         this.configService.get('NODE_ENV', 'development') === 'production',
       path: '/',
     });
-
-    // return { accessToken: tokens.accessToken };
     return res
       .status(HttpStatus.CREATED)
       .json({ accessToken: tokens.accessToken });
@@ -128,32 +128,66 @@ export class AuthController {
   @UseGuards(GoogleGuard)
   @Get('google/callback')
   googleAuthCallback(@Req() req: Request, @Res() res: Response) {
-    console.log(1);
     const token = req.user['accessToken'];
     return res.redirect(
-      `http://localhost:3000/api/auth/success?token=${token}`,
+      `http://localhost:3000/api/auth/success-google?token=${token}`,
     );
   }
 
-  @Get('success')
-  async success(
+  @Get('success-google')
+  async successGoogle(
     @Query('token') token: string,
     @UserAgent() agent: string,
     @Res() res: Response,
   ) {
-    const tokens = await firstValueFrom(
+    await firstValueFrom(
       this.httpService
         .get(
           `https://www.googleapis.com/oauth2/v3/tokeninfo?access_token=${token}`,
         )
         .pipe(
           mergeMap(({ data: { email } }) =>
-            this.authService.googleAuth(email, agent),
+            this.authService.providerAuth(email, agent, Provider.GOOGLE),
           ),
+          map((data) => this.setRefreshTokenToCookies(data, res)),
           handleTimeoutAndErrors(),
         ),
     );
+  }
 
-    this.setRefreshTokenToCookies(tokens, res);
+  @UseGuards(YandexGuard)
+  @Get('yandex')
+  yandexAuth() {}
+
+  @UseGuards(YandexGuard)
+  @Get('yandex/callback')
+  yandexAuthCallback(@Req() req: Request, @Res() res: Response) {
+    const token = req.user['accessToken'];
+    return res.redirect(
+      `http://localhost:3000/api/auth/success-yandex?token=${token}`,
+    );
+  }
+
+  @Get('success-yandex')
+  async successYandex(
+    @Query('token') token: string,
+    @UserAgent() agent: string,
+    @Res() res: Response,
+  ) {
+    await firstValueFrom(
+      this.httpService
+        .get(`https://login.yandex.ru/info?format=json&oauth_token=${token}`)
+        .pipe(
+          mergeMap(({ data: { default_email } }) =>
+            this.authService.providerAuth(
+              default_email,
+              agent,
+              Provider.YANDEX,
+            ),
+          ),
+          map((data) => this.setRefreshTokenToCookies(data, res)),
+          handleTimeoutAndErrors(),
+        ),
+    );
   }
 }
