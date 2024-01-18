@@ -16,6 +16,15 @@ export class UserResponse implements User {
   updatedAt: Date;
   roles: $Enums.Roles[];
 
+  @Exclude()
+  isBlocked: boolean;
+
+  @Exclude()
+  isActivated: boolean;
+
+  @Exclude()
+  activationCode: string;
+
   constructor(user: User) {
     Object.assign(this, user);
   }

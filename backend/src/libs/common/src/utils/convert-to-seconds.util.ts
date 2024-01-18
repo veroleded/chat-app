@@ -4,13 +4,13 @@ export function convertToSecondsUtil(timeStr: string) {
     return parseInt(timeStr);
   }
 
-  let multiplier: number;
+  let multiplier;
 
   switch (timeStr[timeStr.length - 1]) {
     case 's':
       multiplier = 1;
       break;
-    case ' m':
+    case 'm':
       multiplier = 60;
       break;
     case 'h':

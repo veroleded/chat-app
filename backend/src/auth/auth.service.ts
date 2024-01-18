@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ConflictException,
   HttpException,
   HttpStatus,
@@ -8,7 +9,7 @@ import {
 } from '@nestjs/common';
 import { LoginDto, RegistrationUserDto } from './dto';
 import { UserService } from '@user/user.service';
-import { Tokens } from './interfaces';
+import { JwtPayload, Tokens } from './interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { Provider, Token, User } from '@prisma/client';
 import { DatabaseService } from '@database/database.service';
@@ -25,22 +26,32 @@ export class AuthService {
     private readonly databaseService: DatabaseService,
   ) {}
 
-  async register(dto: RegistrationUserDto) {
-    const user: User = await this.userService
+  async register(dto: RegistrationUserDto, agent: string) {
+    const userExist: User = await this.userService
       .findOne(dto.email)
       .catch((error) => {
         this.logger.error(error);
         return null;
       });
-    if (user) {
+    if (userExist) {
       throw new ConflictException(
         'A user with this email address already exists',
       );
     }
-    return this.userService.create(dto).catch((err) => {
+    const user = await this.userService.create(dto).catch((err) => {
       this.logger.error(err);
       return null;
     });
+
+    if (!user) {
+      throw new BadRequestException(
+        `Failed to register users with the data ${JSON.stringify(dto)}`,
+      );
+    }
+
+    const tokens = await this.generateTokens(user, agent);
+
+    return tokens;
   }
 
   async login(dto: LoginDto, agent: string): Promise<Tokens> {
@@ -58,24 +69,41 @@ export class AuthService {
     return await this.generateTokens(user, agent);
   }
 
+  async activate(code: string, accessToken: string) {
+    const payload: JwtPayload = this.jwtService.verify(
+      accessToken.split(' ')[1],
+    );
+
+    const user = await this.userService.findOne(payload.id);
+
+    if (!user) {
+      throw new UnauthorizedException("The user doesn't exist");
+    }
+
+    if (user.activationCode !== code) {
+      throw new BadRequestException('Invalid activation code');
+    }
+
+    return await this.databaseService.user.update({
+      where: { id: user.id },
+      data: { isActivated: true },
+    });
+  }
+
+  // isValidAccessToken(accessToken: string) {
+  //   this
+  // }
+
   async deleteRefreshToken(token: string) {
     return this.databaseService.token.delete({ where: { token } });
   }
 
   async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
-    const token = await this.databaseService.token.findUnique({
+    const token = await this.databaseService.token.delete({
       where: { token: refreshToken },
     });
 
-    if (!token) {
-      throw new UnauthorizedException();
-    }
-
-    await this.databaseService.token.delete({
-      where: { token: token.token },
-    });
-
-    if (new Date(token.exp) < new Date()) {
+    if (!token || new Date(token.exp) < new Date()) {
       throw new UnauthorizedException();
     }
 

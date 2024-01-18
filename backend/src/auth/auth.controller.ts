@@ -4,6 +4,7 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
+  Headers,
   HttpStatus,
   Post,
   Query,
@@ -13,13 +14,12 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { LoginDto, RegistrationUserDto } from './dto';
+import { LoginDto, RegistrationUserDto, UserActivateDto } from './dto';
 import { AuthService } from './auth.service';
 import { Tokens } from './interfaces';
 import { Response, Request } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { Cookies, Public, UserAgent } from '@common/decorators';
-import { UserResponse } from '@user/responses';
 import { GoogleGuard } from './guards/google.guard';
 import { HttpService } from '@nestjs/axios';
 import { firstValueFrom, map, mergeMap } from 'rxjs';
@@ -28,7 +28,6 @@ import { YandexGuard } from './guards/yandex.guard';
 import { Provider } from '@prisma/client';
 
 const REFRESH_TOKEN = 'refreshtoken';
-@Public()
 @Controller('api/auth')
 export class AuthController {
   constructor(
@@ -39,17 +38,19 @@ export class AuthController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Post('registration')
-  async registration(@Body() dto: RegistrationUserDto) {
-    const user = await this.authService.register(dto);
-    if (!user) {
-      throw new BadRequestException(
-        `Failed to register users with the data ${JSON.stringify(dto)}`,
-      );
-    }
-    return new UserResponse(user);
+  @Public()
+  async registration(
+    @Body() dto: RegistrationUserDto,
+    @UserAgent() agent: string,
+    @Res() res: Response,
+  ) {
+    const tokens = await this.authService.register(dto, agent);
+
+    this.setRefreshTokenToCookies(tokens, res);
   }
 
   @Post('login')
+  @Public()
   async login(
     @Body() dto: LoginDto,
     @Res() res: Response,
@@ -64,6 +65,18 @@ export class AuthController {
     }
 
     this.setRefreshTokenToCookies(tokens, res);
+  }
+
+  @Post('activate')
+  @Public()
+  async activate(
+    @Body() { code }: UserActivateDto,
+    @Headers('Authorization') accessToken: string,
+    @Res() res: Response,
+  ) {
+    await this.authService.activate(code, accessToken);
+
+    res.redirect(this.configService.get('CLIENT_URL'));
   }
 
   @Get('logout')

@@ -33,11 +33,16 @@ export class UserService {
   }
 
   async updateOnProvider(user: Partial<User>) {
+    const hashedPassword = user?.password
+      ? await this.hashPassword(user.password)
+      : null;
+
     const updatedUser = await this.databaseService.user.update({
       where: { email: user.email },
       data: {
-        provider: user.provider,
-        roles: user.roles,
+        provider: user?.provider ?? undefined,
+        roles: user?.roles ?? undefined,
+        password: hashedPassword ?? undefined,
       },
     });
 
@@ -57,7 +62,7 @@ export class UserService {
     const userInCache = await this.cacheManager.get<User>(idOrEmail);
 
     if (!userInCache) {
-      const user = this.databaseService.user.findFirst({
+      const user = await this.databaseService.user.findFirst({
         where: {
           OR: [{ id: idOrEmail }, { email: idOrEmail }],
         },
@@ -65,11 +70,13 @@ export class UserService {
       if (!user) {
         return null;
       }
+
       await this.cacheManager.set(
         idOrEmail,
         user,
         convertToSecondsUtil(this.configService.get('JWT_EXP')),
       );
+
       return user;
     }
 
