@@ -8,6 +8,7 @@ import { options } from './config/jwt-module-async-options';
 import { STRATEGIES } from './strategies';
 import { GUARDS } from './guards';
 import { HttpModule } from '@nestjs/axios';
+import { EmailModule } from '@email/email.module';
 
 @Module({
   providers: [AuthService, ...STRATEGIES, ...GUARDS],
@@ -17,6 +18,7 @@ import { HttpModule } from '@nestjs/axios';
     JwtModule.registerAsync(options()),
     UserModule,
     HttpModule,
+    EmailModule,
   ],
   exports: [AuthService],
 })

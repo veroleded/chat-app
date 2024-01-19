@@ -14,7 +14,7 @@ import {
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { LoginDto, RegistrationUserDto, UserActivateDto } from './dto';
+import { LoginDto, RegistrationUserDto } from './dto';
 import { AuthService } from './auth.service';
 import { Tokens } from './interfaces';
 import { Response, Request } from 'express';
@@ -26,6 +26,8 @@ import { firstValueFrom, map, mergeMap } from 'rxjs';
 import { handleTimeoutAndErrors } from '@common/helpers';
 import { YandexGuard } from './guards/yandex.guard';
 import { Provider } from '@prisma/client';
+import { UserActivateDto } from '@email/dto';
+import { EmailService } from '@email/email.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
 @Controller('api/auth')
@@ -34,6 +36,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private readonly configService: ConfigService,
     private readonly httpService: HttpService,
+    private readonly emailService: EmailService,
   ) {}
 
   @UseInterceptors(ClassSerializerInterceptor)
@@ -74,7 +77,7 @@ export class AuthController {
     @Headers('Authorization') accessToken: string,
     @Res() res: Response,
   ) {
-    await this.authService.activate(code, accessToken);
+    await this.emailService.activate(code, accessToken);
 
     res.redirect(this.configService.get('CLIENT_URL'));
   }

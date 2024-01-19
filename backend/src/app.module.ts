@@ -8,7 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { JwtAuthGuard } from '@auth/guards/jwt-auth.guard';
 import { APP_GUARD } from '@nestjs/core';
 import { HttpModule } from '@nestjs/axios';
-import { EmailModule } from './email/email.module';
+import { EmailModule } from '@email/email.module';
 
 @Module({
   imports: [

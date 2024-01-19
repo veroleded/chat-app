@@ -9,13 +9,14 @@ import {
 } from '@nestjs/common';
 import { LoginDto, RegistrationUserDto } from './dto';
 import { UserService } from '@user/user.service';
-import { JwtPayload, Tokens } from './interfaces';
+import { Tokens } from './interfaces';
 import { JwtService } from '@nestjs/jwt';
 import { Provider, Token, User } from '@prisma/client';
 import { DatabaseService } from '@database/database.service';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import * as argon2 from 'argon2';
+import { EmailService } from '@email/email.service';
 
 @Injectable()
 export class AuthService {
@@ -24,6 +25,7 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly databaseService: DatabaseService,
+    private readonly emailService: EmailService,
   ) {}
 
   async register(dto: RegistrationUserDto, agent: string) {
@@ -33,15 +35,33 @@ export class AuthService {
         this.logger.error(error);
         return null;
       });
+
+    const code = v4();
+
     if (userExist) {
-      throw new ConflictException(
-        'A user with this email address already exists',
-      );
+      if (userExist.isActivated) {
+        throw new ConflictException(
+          'A user with this email address already exists',
+        );
+      }
+
+      const user = await this.databaseService.user.update({
+        where: { id: userExist.id },
+        data: { activationCode: code },
+      });
+
+      await this.emailService.sendActivationEmail(userExist.email, code);
+      return await this.generateTokens(user, agent);
     }
-    const user = await this.userService.create(dto).catch((err) => {
-      this.logger.error(err);
-      return null;
-    });
+    const user = await this.userService
+      .create({ activationCode: code, ...dto })
+      .catch((err) => {
+        this.logger.error(err);
+        return null;
+      });
+    console.log(code);
+    console.log(dto);
+    console.log(user);
 
     if (!user) {
       throw new BadRequestException(
@@ -49,6 +69,7 @@ export class AuthService {
       );
     }
 
+    await this.emailService.sendActivationEmail(user.email, code);
     const tokens = await this.generateTokens(user, agent);
 
     return tokens;
@@ -69,29 +90,8 @@ export class AuthService {
     return await this.generateTokens(user, agent);
   }
 
-  async activate(code: string, accessToken: string) {
-    const payload: JwtPayload = this.jwtService.verify(
-      accessToken.split(' ')[1],
-    );
-
-    const user = await this.userService.findOne(payload.id);
-
-    if (!user) {
-      throw new UnauthorizedException("The user doesn't exist");
-    }
-
-    if (user.activationCode !== code) {
-      throw new BadRequestException('Invalid activation code');
-    }
-
-    return await this.databaseService.user.update({
-      where: { id: user.id },
-      data: { isActivated: true },
-    });
-  }
-
-  // isValidAccessToken(accessToken: string) {
-  //   this
+  // verifyAccessToken(accessToken: string) {
+  //   return this.jwtService.verify(accessToken);
   // }
 
   async deleteRefreshToken(token: string) {

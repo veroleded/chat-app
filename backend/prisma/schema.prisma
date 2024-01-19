@@ -22,8 +22,8 @@ model User {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   roles          Roles[]
-  Token          Token[]
-  activationCode String?
+  token          Token[]
+  activationCode String    @unique @map("activation_code")
   isActivated    Boolean   @default(false)
   isBlocked      Boolean   @default(false) @map("is_blocked")
 

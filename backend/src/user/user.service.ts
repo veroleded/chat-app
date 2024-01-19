@@ -28,6 +28,7 @@ export class UserService {
         name: user.name,
         roles: ['USER'],
         provider: user.provider ?? Provider.ORIGIN,
+        activationCode: user.activationCode,
       },
     });
   }
@@ -54,17 +55,21 @@ export class UserService {
     return updatedUser;
   }
 
-  async findOne(idOrEmail: string, isReset = false) {
+  async findOne(uniqueColumn: string, isReset = false) {
     if (isReset) {
-      await this.cacheManager.del(idOrEmail);
+      await this.cacheManager.del(uniqueColumn);
     }
 
-    const userInCache = await this.cacheManager.get<User>(idOrEmail);
+    const userInCache = await this.cacheManager.get<User>(uniqueColumn);
 
     if (!userInCache) {
       const user = await this.databaseService.user.findFirst({
         where: {
-          OR: [{ id: idOrEmail }, { email: idOrEmail }],
+          OR: [
+            { id: uniqueColumn },
+            { email: uniqueColumn },
+            { activationCode: uniqueColumn },
+          ],
         },
       });
       if (!user) {
@@ -72,7 +77,7 @@ export class UserService {
       }
 
       await this.cacheManager.set(
-        idOrEmail,
+        uniqueColumn,
         user,
         convertToSecondsUtil(this.configService.get('JWT_EXP')),
       );
