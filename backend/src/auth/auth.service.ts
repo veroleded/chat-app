@@ -36,7 +36,7 @@ export class AuthService {
         return null;
       });
 
-    const code = v4();
+    const code = this.createActivationCode();
 
     if (userExist) {
       if (userExist.isActivated) {
@@ -59,9 +59,6 @@ export class AuthService {
         this.logger.error(err);
         return null;
       });
-    console.log(code);
-    console.log(dto);
-    console.log(user);
 
     if (!user) {
       throw new BadRequestException(
@@ -176,5 +173,11 @@ export class AuthService {
     });
 
     return { accessToken, refreshToken };
+  }
+
+  private createActivationCode() {
+    const code = v4();
+
+    return code;
   }
 }

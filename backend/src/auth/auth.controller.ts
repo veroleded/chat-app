@@ -4,7 +4,6 @@ import {
   ClassSerializerInterceptor,
   Controller,
   Get,
-  Headers,
   HttpStatus,
   Post,
   Query,
@@ -30,7 +29,7 @@ import { UserActivateDto } from '@email/dto';
 import { EmailService } from '@email/email.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
-@Controller('api/auth')
+@Controller('auth')
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
@@ -72,12 +71,8 @@ export class AuthController {
 
   @Post('activate')
   @Public()
-  async activate(
-    @Body() { code }: UserActivateDto,
-    @Headers('Authorization') accessToken: string,
-    @Res() res: Response,
-  ) {
-    await this.emailService.activate(code, accessToken);
+  async activate(@Body() { code }: UserActivateDto, @Res() res: Response) {
+    await this.emailService.activate(code);
 
     res.redirect(this.configService.get('CLIENT_URL'));
   }

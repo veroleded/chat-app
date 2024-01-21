@@ -59,6 +59,18 @@ services:
       - "8000:8000"
     depends_on:
       - backend
+  
+  #rabbitmq
+  # rabbitmq:
+  #   image: "rabbitmq:latest"
+  #   container_name: rabbitmq
+  #   volumes:
+  #     - "/var/lib/rabbitmq"
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   env_file:
+  #     - .env
 
 
 networks:

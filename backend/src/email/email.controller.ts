@@ -4,7 +4,7 @@ import { EmailService } from './email.service';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 
-@Controller('api/email')
+@Controller('email')
 export class EmailController {
   constructor(
     private readonly emailService: EmailService,

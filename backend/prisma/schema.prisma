@@ -24,7 +24,7 @@ model User {
   roles          Roles[]
   token          Token[]
   activationCode String    @unique @map("activation_code")
-  isActivated    Boolean   @default(false)
+  isActivated    Boolean   @default(false) @map("is_activated")
   isBlocked      Boolean   @default(false) @map("is_blocked")
 
   @@map("users")
