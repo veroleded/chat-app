@@ -25,7 +25,7 @@ export class UserService {
       data: {
         email: user.email,
         password: await hashedPassword,
-        name: user.name,
+        nickname: user.nickname,
         roles: ['USER'],
         provider: user.provider ?? Provider.ORIGIN,
         activationCode: user.activationCode,
@@ -50,6 +50,8 @@ export class UserService {
     await Promise.all([
       this.cacheManager.set(updatedUser.id, updatedUser),
       this.cacheManager.set(updatedUser.email, updatedUser),
+      this.cacheManager.set(updatedUser.activationCode, updatedUser),
+      this.cacheManager.set(updatedUser.nickname, updatedUser),
     ]);
 
     return updatedUser;
@@ -69,6 +71,7 @@ export class UserService {
             { id: uniqueColumn },
             { email: uniqueColumn },
             { activationCode: uniqueColumn },
+            { nickname: uniqueColumn },
           ],
         },
       });
@@ -100,6 +103,8 @@ export class UserService {
     await Promise.all([
       this.cacheManager.del(id),
       this.cacheManager.del(user.email),
+      this.cacheManager.del(deletedUser.activationCode),
+      this.cacheManager.del(deletedUser.nickname),
     ]);
 
     return deletedUser;

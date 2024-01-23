@@ -16,13 +16,17 @@ datasource db {
 model User {
   id             String    @id @default(uuid())
   email          String    @unique
+  nickname       String    @unique
   name           String?
+  lastname       String?
   password       String?
   provider       Provider?
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
   roles          Roles[]
   token          Token[]
+  messages       Message[]
+  chats          Chat[]
   activationCode String    @unique @map("activation_code")
   isActivated    Boolean   @default(false) @map("is_activated")
   isBlocked      Boolean   @default(false) @map("is_blocked")
@@ -38,6 +42,25 @@ model Token {
   userAgent String   @map("user_agent")
 
   @@map("tokens")
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  text      String
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String   @map("user_id")
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  chatId    String
+}
+
+model Chat {
+  id        String    @id @default(uuid())
+  users     User[]
+  messages  Message[]
+  createdAt DateTime  @default(now()) @map("created_at")
 }
 
 enum Roles {

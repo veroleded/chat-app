@@ -29,8 +29,15 @@ export class AuthService {
   ) {}
 
   async register(dto: RegistrationUserDto, agent: string) {
-    const userExist: User = await this.userService
+    const emailExist: User = await this.userService
       .findOne(dto.email)
+      .catch((error) => {
+        this.logger.error(error);
+        return null;
+      });
+
+    const nicknameExist: User = await this.userService
+      .findOne(dto.nickname)
       .catch((error) => {
         this.logger.error(error);
         return null;
@@ -38,21 +45,30 @@ export class AuthService {
 
     const code = this.createActivationCode();
 
-    if (userExist) {
-      if (userExist.isActivated) {
+    if (emailExist) {
+      if (emailExist.isActivated) {
         throw new ConflictException(
           'A user with this email address already exists',
         );
       }
 
+      if (emailExist.email !== nicknameExist.email) {
+        throw new ConflictException('A user with this nickname already exists');
+      }
+
       const user = await this.databaseService.user.update({
-        where: { id: userExist.id },
+        where: { id: emailExist.id },
         data: { activationCode: code },
       });
 
-      await this.emailService.sendActivationEmail(userExist.email, code);
+      await this.emailService.sendActivationEmail(emailExist.email, code);
       return await this.generateTokens(user, agent);
     }
+
+    if (nicknameExist) {
+      throw new ConflictException('A user with this nickname already exists');
+    }
+
     const user = await this.userService
       .create({ activationCode: code, ...dto })
       .catch((err) => {

@@ -11,5 +11,5 @@ export class RegistrationUserDto {
   @IsString()
   @MinLength(2)
   @MaxLength(12)
-  name: string;
+  nickname: string;
 }

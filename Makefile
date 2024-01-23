@@ -6,6 +6,6 @@ install:
 		cd backend && npm install
 
 dev:
-		docker-compose -f docker-compose.dev.yaml up
+		docker-compose -f docker-compose.dev.yaml up --build
 
-prod:	docker-compose -f docker-compose.prod.yaml up
+prod:	docker-compose -f docker-compose.prod.yaml up --build
