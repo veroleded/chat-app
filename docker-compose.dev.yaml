@@ -49,8 +49,11 @@ services:
   # Frontend service
   # Vite service for development
   vite:
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     image: node:20.2.0
-    container_name: vite
+    container_name: react-app
     working_dir: /app
     command:  npm run dev
     volumes:
