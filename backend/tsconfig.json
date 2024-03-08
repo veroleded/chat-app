@@ -34,6 +34,8 @@
       "@message/*": ["src/message/*"],
       "@websockets": ["src/websockets"],
       "@websockets/*": ["src/websockets/*"],
+      "@cors":["src/cors"],
+      "@cors/*": ["src/cors/*"]
     }
   }
 }
