@@ -72,6 +72,7 @@ export class AuthController {
   @Post('activate')
   @Public()
   async activate(@Body() { code }: UserActivateDto, @Res() res: Response) {
+    console.log(code);
     await this.emailService.activate(code);
 
     res.redirect(this.configService.get('CLIENT_URL'));
@@ -133,9 +134,11 @@ export class AuthController {
   }
 
   @UseGuards(GoogleGuard)
+  @Public()
   @Get('google')
   googleAuth() {}
 
+  @Public()
   @UseGuards(GoogleGuard)
   @Get('google/callback')
   googleAuthCallback(@Req() req: Request, @Res() res: Response) {
@@ -145,6 +148,7 @@ export class AuthController {
     );
   }
 
+  @Public()
   @Get('success-google')
   async successGoogle(
     @Query('token') token: string,
@@ -166,10 +170,12 @@ export class AuthController {
     );
   }
 
+  @Public()
   @UseGuards(YandexGuard)
   @Get('yandex')
   yandexAuth() {}
 
+  @Public()
   @UseGuards(YandexGuard)
   @Get('yandex/callback')
   yandexAuthCallback(@Req() req: Request, @Res() res: Response) {
@@ -179,6 +185,7 @@ export class AuthController {
     );
   }
 
+  @Public()
   @Get('success-yandex')
   async successYandex(
     @Query('token') token: string,

@@ -14,7 +14,8 @@ export class EmailController {
   @Get('activate/:code')
   @Public()
   async activate(@Param('code') code: string, @Res() res: Response) {
+    console.log(code);
     await this.emailService.activate(code);
-    res.redirect(this.configService.get('CLIENT_URL'));
+    res.redirect(`${this.configService.get('CLIENT_URL')}/activated`);
   }
 }

@@ -12,7 +12,13 @@ import {
 import { Server, Socket } from 'socket.io';
 import { SendMessageDto } from './dto';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+  serverClient: false,
+  namespace: 'chat',
+})
 export class WebsocketsGateway
   implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect
 {
@@ -26,8 +32,8 @@ export class WebsocketsGateway
     return message;
   }
 
-  afterInit(server: any) {
-    console.log('websocket init');
+  afterInit(server: Server) {
+    console.log(`websocket init ${server}`);
   }
 
   handleConnection(client: Socket, ...args: any[]) {

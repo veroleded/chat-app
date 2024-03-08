@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { UserModule } from './user/user.module';
 import { DatabaseModule } from './database/database.module';
 import { AuthModule } from './auth/auth.module';
@@ -11,6 +11,7 @@ import { MessageModule } from '@message/message.module';
 import { MessageService } from '@message/message.service';
 import { EmailModule } from '@email/email.module';
 import { WebsocketsGateway } from '@websockets/websockets.gateway';
+import { CorsMiddleware } from '@cors/cors.middleware';
 
 @Module({
   imports: [
@@ -32,4 +33,8 @@ import { WebsocketsGateway } from '@websockets/websockets.gateway';
     MessageService,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(CorsMiddleware).forRoutes('*');
+  }
+}

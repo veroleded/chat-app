@@ -48,25 +48,29 @@ export class AuthService {
     if (emailExist) {
       if (emailExist.isActivated) {
         throw new ConflictException(
-          'A user with this email address already exists',
+          'Пользователь с таким email уже зарегистрирован',
         );
       }
 
-      if (emailExist.email !== nicknameExist.email) {
-        throw new ConflictException('A user with this nickname already exists');
+      if (nicknameExist && emailExist.email !== nicknameExist.email) {
+        throw new ConflictException(
+          'Пользователь с таким псевдонимом уже зарегистрирован',
+        );
       }
 
-      const user = await this.databaseService.user.update({
-        where: { id: emailExist.id },
-        data: { activationCode: code },
+      const user = await this.userService.update({
+        ...dto,
+        activationCode: code,
       });
 
-      await this.emailService.sendActivationEmail(emailExist.email, code);
+      await this.emailService.sendActivationEmail(user.email, code);
       return await this.generateTokens(user, agent);
     }
 
     if (nicknameExist) {
-      throw new ConflictException('A user with this nickname already exists');
+      throw new ConflictException(
+        'Пользователь с таким псевдонимом уже зарегистрирован',
+      );
     }
 
     const user = await this.userService
@@ -139,9 +143,10 @@ export class AuthService {
 
       return this.generateTokens(updatedUser, agent);
     }
-
+    const nickname = `user${v4()}`;
+    const activationCode = this.createActivationCode();
     const user = await this.userService
-      .create({ email, provider })
+      .create({ email, provider, nickname, activationCode })
       .catch((err) => {
         this.logger.error(err);
         return null;
@@ -154,6 +159,7 @@ export class AuthService {
       );
     }
 
+    await this.emailService.sendActivationEmail(user.email, activationCode);
     return await this.generateTokens(user, agent);
   }
 

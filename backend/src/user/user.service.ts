@@ -33,6 +33,30 @@ export class UserService {
     });
   }
 
+  async update(user: Partial<User>) {
+    const { password, ...other } = user;
+    const hashedPassword = password
+      ? await this.hashPassword(password)
+      : undefined;
+
+    const updatedUser = await this.databaseService.user.update({
+      where: { email: user.email },
+      data: {
+        password: hashedPassword,
+        ...other,
+      },
+    });
+
+    await Promise.all([
+      this.cacheManager.set(updatedUser.id, updatedUser),
+      this.cacheManager.set(updatedUser.email, updatedUser),
+      this.cacheManager.set(updatedUser.activationCode, updatedUser),
+      this.cacheManager.set(updatedUser.nickname, updatedUser),
+    ]);
+
+    return updatedUser;
+  }
+
   async updateOnProvider(user: Partial<User>) {
     const hashedPassword = user?.password
       ? await this.hashPassword(user.password)

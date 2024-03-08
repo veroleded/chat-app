@@ -10,7 +10,7 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserResponse } from './responses';
-import { CurrentUser, Public } from '@common/decorators';
+import { CurrentUser } from '@common/decorators';
 import { JwtPayload } from '@auth/interfaces';
 
 @Controller('user')
@@ -27,12 +27,6 @@ export class UserController {
     }
 
     return new UserResponse(user);
-  }
-
-  @Get()
-  @Public()
-  get() {
-    return 'hello world';
   }
 
   @UseInterceptors(ClassSerializerInterceptor)

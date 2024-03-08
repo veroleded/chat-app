@@ -9,7 +9,7 @@ export class RegistrationUserDto {
   password: string;
 
   @IsString()
-  @MinLength(2)
+  @MinLength(4)
   @MaxLength(12)
   nickname: string;
 }
