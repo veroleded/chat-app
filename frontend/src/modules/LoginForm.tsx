@@ -1,41 +1,44 @@
 import { useFormik } from 'formik';
-import React, { useState } from 'react';
+import React, { Dispatch, SetStateAction, useState } from 'react';
 import * as Yup from 'yup';
 import { useAppStore } from '../store.ts/store-provider';
 import { useNavigate } from 'react-router-dom';
 import classNames from 'classnames';
 import { SyncLoader } from 'react-spinners';
+import { Button } from '../UI';
+import { FcGoogle } from 'react-icons/fc';
+import { TbBrandYandex } from 'react-icons/tb';
 
 const validationSchema = Yup.object().shape({
   email: Yup.string().email('Введите правильный адрес электронной почты').required('Укажите email'),
-  nickname: Yup.string()
-    .min(4, 'Минимум 4 символа')
-    .max(16, 'Максимум 16 символов')
-    .required('Как вас называть?'),
   password: Yup.string()
     .min(8, 'Пароль должен содержать минимум 8 символов')
     .matches(/[A-Z]/, 'Пароль должен содержать хотя бы одну заглавную букву')
     .matches(/[0-9]/, 'Пароль должен содержать хотя бы одну цифру')
     .required('Укажите пароль'),
-  confirmPassword: Yup.string()
-    .oneOf([Yup.ref('password')], 'Пароли должны совпадать')
-    .required('Подтвердите пароль'),
 });
 
-export const RegistrationForm = () => {
+type Props = {
+  registrationSwap: Dispatch<SetStateAction<'login' | 'registration' | null>>;
+};
+
+export const LoginForm = ({ registrationSwap }: Props) => {
   const { authStore } = useAppStore();
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setLoading] = useState(false);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const navigate = useNavigate();
 
+  const googleHref = 'http://localhost:3000/api/auth/google';
+  const yandexHref = 'http://localhost:3000/api/auth/yandex';
+
   const formik = useFormik({
-    initialValues: { email: '', password: '', confirmPassword: '', nickname: '' },
+    initialValues: { email: '', password: '' },
     validationSchema,
-    onSubmit: async ({ email, password, nickname }) => {
+    onSubmit: async ({ email, password }) => {
       setError(null);
       setLoading(true);
-      await authStore.registration(email, nickname, password);
+      await authStore.login(email, password);
 
       if (authStore.isAuth) {
         setError(null);
@@ -70,8 +73,31 @@ export const RegistrationForm = () => {
   );
 
   return (
-    <div className='flex flex-col items-center h-full py-5'>
-      <h2 className='text-2xl md:text-3xl text-center font-bold mb-4'>Создайте учетную запись</h2>
+    <div className='flex flex-col items-center h-full py-10'>
+      <h2 className='text-2xl md:text-3xl text-center font-bold mb-4'>Войти в VeroledChat</h2>
+      <Button
+        href={googleHref}
+        target='_blank'
+        className='mb-5 flex items-center justify-start bg-gray-200 hover:bg-white text-black font-bold py-2 px-6 rounded-3xl transition-colors'>
+        <FcGoogle size={30} className='mr-5' />
+        <p className='font-extralight text-sm 2xl:text-lg'>
+          Войти с помощью <span className=' font-light'>Google</span>
+        </p>
+      </Button>
+      <Button
+        target='_blank'
+        href={yandexHref}
+        className='mb-5 flex items-center justify-start bg-gray-200 hover:bg-white  text-black font-bold py-2 px-6 rounded-3xl transition-colors'>
+        <TbBrandYandex size={30} color='red' className='mr-5' />
+        <p className='font-extralight text-sm 2xl:text-lg'>
+          Войти с помощью <span className='font-bold'>Yandex</span>
+        </p>
+      </Button>
+      <div className='mb-5 flex w-2/3 items-center'>
+        <div className='border border-gray-300 flex-1 h-0'></div>
+        <div className='px-2'>или</div>
+        <div className='border border-gray-300 flex-1 h-0'></div>
+      </div>
       <form onSubmit={handleSubmit} className='w-full space-y-4'>
         <div className='md:w-2/3 mx-2 md:mx-auto flex flex-col'>
           <label htmlFor='email' className='mb-2'>
@@ -90,22 +116,6 @@ export const RegistrationForm = () => {
         </div>
 
         <div className='md:w-2/3 mx-2 md:mx-auto flex flex-col'>
-          <label htmlFor='nickname' className='mb-2'>
-            <span className='font-light text-sm uppercase'>ПСЕВДОНИМ*</span>
-          </label>
-          <input
-            type='text'
-            id='nickname'
-            name='nickname'
-            className={getInputClass(formik.errors.nickname)}
-            placeholder=''
-            onChange={formik.handleChange}
-            value={formik.values.nickname}
-          />
-          {formik.errors.nickname && <div className='text-red-500'>{formik.errors.nickname}</div>}
-        </div>
-
-        <div className='md:w-2/3 mx-2 md:mx-auto flex flex-col'>
           <label htmlFor='password' className='mb-2'>
             <span className='font-light text-sm uppercase'>ПАРОЛЬ*</span>
           </label>
@@ -119,24 +129,6 @@ export const RegistrationForm = () => {
             value={formik.values.password}
           />
           {formik.errors.password && <div className='text-red-500'>{formik.errors.password}</div>}
-        </div>
-
-        <div className='md:w-2/3 mx-2 md:mx-auto flex flex-col'>
-          <label htmlFor='confirmPassword' className='mb-2'>
-            <span className='font-light text-sm uppercase'>Подтверждение пароля*</span>
-          </label>
-          <input
-            id='confirmPassword'
-            name='confirmPassword'
-            type='password'
-            className={getInputClass(formik.errors.confirmPassword)}
-            placeholder=''
-            onChange={formik.handleChange}
-            value={formik.values.confirmPassword}
-          />
-          {formik.errors.confirmPassword && (
-            <div className='text-red-500'>{formik.errors.confirmPassword}</div>
-          )}
           {error && <p className='mx-auto text-red-500 text-center mt-5'>{error}</p>}
         </div>
 
@@ -144,9 +136,15 @@ export const RegistrationForm = () => {
           disabled={isLoading || (Object.keys(formik.errors).length !== 0 && formSubmitted)}
           type='submit'
           className={submitButtonClass}>
-          {isLoading ? <SyncLoader size={5} color='white' className='p-2' /> : 'Зарегистрироваться'}
+          {isLoading ? <SyncLoader size={5} color='white' className='p-2' /> : 'Войти'}
         </button>
       </form>
+      <div className='mt-5'>
+        <span>Нет учетной записи? </span>
+        <a href='' className='text-blue-400' onClick={() => registrationSwap('registration')}>
+          Зарегистрируйтесь
+        </a>
+      </div>
     </div>
   );
 };

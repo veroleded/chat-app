@@ -5,6 +5,7 @@ import Welcome from './pages/Welcome';
 import { observer } from 'mobx-react-lite';
 import { useAppStore } from './store.ts/store-provider';
 import { useEffect } from 'react';
+import Activate from './pages/Activate';
 
 const App = observer(() => {
   const { authStore } = useAppStore();
@@ -31,6 +32,7 @@ const App = observer(() => {
     <div>
       <Routes>
         <Route path='/welcome' element={<Welcome />} />
+        <Route path='/activate' element={<Activate />} />
         <Route path='*' element={<NotFound />} />
       </Routes>
       <button onClick={() => authStore.logout()}>выйти</button>

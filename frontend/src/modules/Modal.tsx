@@ -1,15 +1,13 @@
 import React, { useEffect } from 'react';
 import { IoMdClose } from 'react-icons/io';
 import { Button } from '../UI';
-import classNames from 'classnames';
 
 type Props = {
   children: React.ReactNode | React.ReactNode[];
-  isOpen: boolean;
   close: () => void;
 };
 
-export const Modal = ({ children, isOpen, close }: Props) => {
+export const Modal = ({ children, close }: Props) => {
   const escKeyHandler = (event: KeyboardEvent) => {
     if (event.key === 'Escape') {
       close();
@@ -23,11 +21,8 @@ export const Modal = ({ children, isOpen, close }: Props) => {
     };
   }, []);
 
-  const className = classNames('absolute top-0 left-0 w-screen h-screen backdrop-blur', {
-    hidden: !isOpen,
-  });
   return (
-    <div className={className}>
+    <div className='absolute top-0 left-0 w-screen h-screen backdrop-blur'>
       <div
         tabIndex={-1}
         className='flex flex-col bg-blue-900 w-screen md:w-2/3 xl:w-1/3 h-full md:h-fit md:rounded-lg md:mt-10 mx-auto'>

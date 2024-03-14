@@ -35,7 +35,12 @@ export default class AuthStore {
       this.setAuth(true);
     } catch (e) {
       if (e instanceof AxiosError) {
-        console.log(e.response?.data);
+        console.log(e);
+        if (e.response?.data.statusCode === 500) {
+          this.setError('Что-то пошло не так, повторите попытку');
+        } else {
+          this.setError(e.response?.data.message);
+        }
       } else {
         console.log(e);
       }
@@ -69,8 +74,8 @@ export default class AuthStore {
   async logout() {
     this.setLoading(true);
     try {
-      await AuthService.logout();
       localStorage.removeItem('token');
+      await AuthService.logout();
       this.setAuth(false);
     } catch (e) {
       if (e instanceof AxiosError) {
