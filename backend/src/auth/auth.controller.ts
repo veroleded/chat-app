@@ -5,6 +5,7 @@ import {
   Controller,
   Get,
   HttpStatus,
+  Param,
   Post,
   Query,
   Req,
@@ -25,7 +26,6 @@ import { firstValueFrom, map, mergeMap } from 'rxjs';
 import { handleTimeoutAndErrors } from '@common/helpers';
 import { YandexGuard } from './guards/yandex.guard';
 import { Provider } from '@prisma/client';
-import { UserActivateDto } from '@email/dto';
 import { EmailService } from '@email/email.service';
 
 const REFRESH_TOKEN = 'refreshtoken';
@@ -69,11 +69,11 @@ export class AuthController {
     this.setRefreshTokenToCookies(tokens, res);
   }
 
-  @Post('activate')
+  @Get('activate/:code')
   @Public()
-  async activate(@Body() { code }: UserActivateDto, @Res() res: Response) {
+  async activate(@Param('code') code: string, @Res() res: Response) {
     console.log(code);
-    await this.emailService.activate(code);
+    await this.authService.activate(code);
 
     res.redirect(this.configService.get('CLIENT_URL'));
   }

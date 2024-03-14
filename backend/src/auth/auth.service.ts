@@ -17,6 +17,7 @@ import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import * as argon2 from 'argon2';
 import { EmailService } from '@email/email.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
@@ -26,9 +27,11 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly databaseService: DatabaseService,
     private readonly emailService: EmailService,
+    private readonly configService: ConfigService,
   ) {}
 
   async register(dto: RegistrationUserDto, agent: string) {
+    console.log(123);
     const emailExist: User = await this.userService
       .findOne(dto.email)
       .catch((error) => {
@@ -101,7 +104,7 @@ export class AuthService {
       });
 
     if (!user || !(await argon2.verify(user.password, dto.password))) {
-      throw new UnauthorizedException('Invalid login or password');
+      throw new UnauthorizedException('Неправильный email или пароль');
     }
 
     return await this.generateTokens(user, agent);
@@ -128,6 +131,22 @@ export class AuthService {
 
     const tokens = await this.generateTokens(user, agent);
     return tokens;
+  }
+
+  async activate(code: string) {
+    const user = await this.userService.findOne(code);
+
+    if (!user) {
+      throw new UnauthorizedException("The user doesn't exist");
+    }
+
+    const JwtPayload = this.jwtService.verify(code);
+    console.log(JwtPayload);
+
+    return await this.databaseService.user.update({
+      where: { id: user.id },
+      data: { isActivated: true },
+    });
   }
 
   async providerAuth(email: string, agent: string, provider: Provider) {
@@ -190,16 +209,23 @@ export class AuthService {
     const accessToken = this.jwtService.sign({
       id: user.id,
       email: user.email,
-      name: user.name,
+      nickname: user.nickname,
       roles: user.roles,
+      isActivated: user.isActivated,
     });
 
     return { accessToken, refreshToken };
   }
 
   private createActivationCode() {
-    const code = v4();
+    // const code = this.jwtService.sign(
+    //   { code: 'код активации' },
+    //   {
+    //     expiresIn: this.configService.get('JWT_EXP'),
+    //     secret: this.configService.get('JWT_SECRET'),
+    //   },
+    // );
 
-    return code;
+    return 'code';
   }
 }

@@ -1,6 +1,6 @@
 import { DatabaseService } from '@database/database.service';
 import { MailerService } from '@nestjs-modules/mailer';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { UserService } from '@user/user.service';
 
@@ -13,26 +13,13 @@ export class EmailService {
     private readonly configService: ConfigService,
   ) {}
 
-  async activate(code: string) {
-    const user = await this.userService.findOne(code);
-
-    if (!user) {
-      throw new UnauthorizedException("The user doesn't exist");
-    }
-
-    return await this.databaseService.user.update({
-      where: { id: user.id },
-      data: { isActivated: true },
-    });
-  }
-
   async sendActivationEmail(
     email: string,
     activationToken: string,
   ): Promise<void> {
     const link = `${this.configService.get(
       'API_URL',
-    )}/api/email/activate/${activationToken}`;
+    )}/api/auth/activate/${activationToken}`;
 
     await this.mailerService.sendMail({
       to: email,
