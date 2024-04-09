@@ -125,10 +125,6 @@ export class AuthService {
     refreshToken: string,
     agent: string,
   ): Promise<{ tokens: Tokens; user: User }> {
-    const _token = await this.databaseService.token.findFirst({
-      where: { token: refreshToken },
-    });
-    console.log('asd', _token);
     const token = await this.deleteRefreshToken(refreshToken);
 
     if (!token || new Date(token.exp) < new Date()) {

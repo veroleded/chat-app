@@ -36,7 +36,7 @@ export const LoginForm = observer(() => {
       if (authStore.isAuth) {
         setError(null);
         if (authStore.user?.isActivated) {
-          navigate('/chat');
+          navigate('/main');
         }
         navigate('/activate');
       } else {

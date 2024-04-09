@@ -8,7 +8,7 @@ import Main from './pages/Main/Main';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { useAppStore } from './store.ts/store-provider';
 import { RegistrationForm } from './components/Registration/Registration-form';
-import { useEffect } from 'react';
+import Profile from './components/MainAside/Profile/Profile';
 
 const router = createBrowserRouter([
   { path: '*', element: <NotFound /> },
@@ -27,25 +27,25 @@ const router = createBrowserRouter([
     ],
   },
   { path: '/activate', element: <Activate /> },
-  { path: '/chat', element: <Main /> },
+  {
+    path: '/main',
+    element: <Main />,
+    children: [
+      {
+        path: 'profile',
+        element: <Profile />,
+      },
+    ],
+  },
 ]);
 
 const App = observer(() => {
   const { authStore } = useAppStore();
 
-  useEffect(() => {
-    const checkAuth = async () => {
-      if (localStorage.getItem('token')) {
-        await authStore.checkAuth();
-      }
-    };
-    checkAuth();
-  }, []);
-
   return (
     <div>
       <RouterProvider router={router} />
-      <button onClick={() => authStore.logout()}>выйти</button>
+      {/* <button onClick={() => authStore.logout()}>выйти</button> */}
     </div>
   );
 });

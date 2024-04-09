@@ -1,4 +1,5 @@
 import {
+  Body,
   ClassSerializerInterceptor,
   Controller,
   Delete,
@@ -6,12 +7,14 @@ import {
   NotFoundException,
   Param,
   ParseUUIDPipe,
+  Put,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { UserResponse } from './responses';
 import { CurrentUser } from '@common/decorators';
 import { JwtPayload } from '@auth/interfaces';
+import { User } from '@prisma/client';
 
 @Controller('user')
 export class UserController {
@@ -25,6 +28,20 @@ export class UserController {
     if (!user || !user.isActivated) {
       throw new NotFoundException('User is not found');
     }
+
+    return new UserResponse(user);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Put()
+  async updateCurrentUser(
+    @CurrentUser() currentUser: JwtPayload,
+    @Body() payload: Partial<User>,
+  ) {
+    const user = await this.userService.update({
+      email: currentUser.email,
+      ...payload,
+    });
 
     return new UserResponse(user);
   }

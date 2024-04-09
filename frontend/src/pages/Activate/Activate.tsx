@@ -13,7 +13,7 @@ const Activate = observer(() => {
   useEffect(() => {
     authStore.setError(null);
     if (authStore.user?.isActivated) {
-      navigate('/chat');
+      navigate('/main');
     }
   });
 

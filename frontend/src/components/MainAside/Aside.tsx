@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import Header from './Header/Header';
 import Chat from '../MainChat/Chat';
+import { Outlet } from 'react-router-dom';
 
 type Props = {
   chatIsOpen: boolean;
@@ -15,14 +16,10 @@ const Aside = ({ chatIsOpen, wight }: Props) => {
     }
   }, [chatIsOpen]);
   return (
-    <aside className='bg-gray-200 h-screen w-full md:w-1/4 md:border-r flex flex-col'>
+    <aside className='bg-gray-200 h-screen w-full md:w-1/3 md:border-r flex-col-reverse flex md:flex-col relative'>
       <Header />
+      <Outlet />
       {chatIsOpen && wight < 768 && <Chat />}
-      {/* <ul className='h-full order-1 md:order-2'>
-        <li className='py-2 border-b'>Contact 1</li>
-        <li className='py-2 border-b'>Contact 2</li>
-        <li className='py-2 border-b'>Contact 3</li>
-      </ul> */}
     </aside>
   );
 };

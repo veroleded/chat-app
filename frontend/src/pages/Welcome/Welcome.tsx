@@ -16,11 +16,12 @@ const Welcome = observer(() => {
       }
       if (authStore.isAuth) {
         if (authStore.user?.isActivated) {
-          navigate('chat');
+          navigate('main');
         } else {
           navigate('activate');
         }
       }
+      console.log(authStore);
     };
     checkAuth();
   }, []);
@@ -28,9 +29,9 @@ const Welcome = observer(() => {
   return authStore.isLoading ? (
     <Loading />
   ) : (
-    <main className='container h-screen mx-auto flex flex-col md:flex-row gap-3 overflow-hidden bg-blue-950 text-blue-50'>
+    <main className='container h-full md:h-screen mx-auto flex flex-col md:flex-row gap-3 overflow-hidden bg-blue-950 text-blue-50'>
       <section className=' flex'>
-        <img src={icon} alt='Логотип' className='md:mt-auto md:mb-auto' />
+        <img src={icon} alt='Логотип' className=' mt-[-35px] mb-[-45px] md:mt-auto md:mb-auto' />
       </section>
       <section className='flex flex-col justify-center md:flex-1 mx-2'>
         <h1 className='mt-5 mb-8 mb:mt-16 text-wrap text-5xl lg:text-6xl xl:text-8xl 3xl:text-9xl font-bold'>
