@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { IoMdClose } from 'react-icons/io';
-import { Button } from '../UI';
+import { Button } from '../../UI';
 
 type Props = {
   children: React.ReactNode | React.ReactNode[];

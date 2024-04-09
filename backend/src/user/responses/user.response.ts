@@ -31,4 +31,7 @@ export class UserResponse implements User {
   constructor(user: User) {
     Object.assign(this, user);
   }
+  description: string;
+
+  birthday: Date;
 }

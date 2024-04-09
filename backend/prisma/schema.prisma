@@ -17,6 +17,8 @@ model User {
   id             String    @id @default(uuid())
   email          String    @unique
   nickname       String    @unique
+  description    String?
+  birthday       DateTime?
   name           String?
   lastname       String?
   password       String?
@@ -31,7 +33,23 @@ model User {
   isActivated    Boolean   @default(false) @map("is_activated")
   isBlocked      Boolean   @default(false) @map("is_blocked")
 
+  sentRequests     FriendRequest[] @relation("SentRequests")
+  receivedRequests FriendRequest[] @relation("ReceivedRequests")
+
   @@map("users")
+}
+
+model FriendRequest {
+  id         String              @id @default(uuid())
+  sender     User                @relation("SentRequests", fields: [senderId], references: [id])
+  senderId   String              @map("sender_id")
+  receiver   User                @relation("ReceivedRequests", fields: [receiverId], references: [id])
+  receiverId String              @map("receiver_id")
+  status     FriendsRequstStatus
+  createdAt  DateTime            @default(now())
+  updatedAt  DateTime            @updatedAt
+
+  @@map("friend_requests")
 }
 
 model Token {
@@ -66,6 +84,13 @@ model Chat {
 enum Roles {
   ADMIN
   USER
+}
+
+enum FriendsRequstStatus {
+  SENDED
+  ACCEPTED
+  CANCELED
+  REJECTED
 }
 
 enum Provider {

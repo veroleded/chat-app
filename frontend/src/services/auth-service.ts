@@ -22,4 +22,8 @@ export default class AuthService {
   static async logout(): Promise<void> {
     return $api.get('/auth/logout');
   }
+
+  static async sendActivationMail(): Promise<void> {
+    return $api.get('/auth/activateMail');
+  }
 }

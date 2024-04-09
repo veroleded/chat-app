@@ -9,9 +9,10 @@ import { HttpModule } from '@nestjs/axios';
 import { ChatModule } from '@chat/chat.module';
 import { MessageModule } from '@message/message.module';
 import { MessageService } from '@message/message.service';
-import { EmailModule } from '@email/email.module';
+import { EmailModule } from '@email/mailer.module';
 import { WebsocketsGateway } from '@websockets/websockets.gateway';
 import { CorsMiddleware } from '@cors/cors.middleware';
+import { FriendsModule } from './friends/friends.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { CorsMiddleware } from '@cors/cors.middleware';
     EmailModule,
     ChatModule,
     MessageModule,
+    FriendsModule,
   ],
   providers: [
     {

@@ -11,6 +11,9 @@ export const options = (config: ConfigService): MailerOptions => ({
       user: config.get('SMTP_EMAIL'), // Убедитесь, что в .env есть значение для SMTP_EMAIL
       pass: config.get('SMTP_PASSWORD'), // Убедитесь, что в .env есть значение для SMTP_PASSWORD
     },
+    tls: {
+      rejectUnauthorized: false, // this did the trick
+    },
   },
   defaults: {
     from: '"No Reply" <noreply@example.com>',

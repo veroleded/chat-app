@@ -5,7 +5,7 @@ import { ConfigService } from '@nestjs/config';
 import { UserService } from '@user/user.service';
 
 @Injectable()
-export class EmailService {
+export class EmailerService {
   constructor(
     private readonly databaseService: DatabaseService,
     private readonly userService: UserService,

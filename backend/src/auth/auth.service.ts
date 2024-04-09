@@ -16,7 +16,7 @@ import { DatabaseService } from '@database/database.service';
 import { v4 } from 'uuid';
 import { add } from 'date-fns';
 import * as argon2 from 'argon2';
-import { EmailService } from '@email/email.service';
+import { EmailerService } from '@email/mailer.service';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()
@@ -26,12 +26,14 @@ export class AuthService {
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
     private readonly databaseService: DatabaseService,
-    private readonly emailService: EmailService,
+    private readonly emailService: EmailerService,
     private readonly configService: ConfigService,
   ) {}
 
-  async register(dto: RegistrationUserDto, agent: string) {
-    console.log(123);
+  async register(
+    dto: RegistrationUserDto,
+    agent: string,
+  ): Promise<{ tokens: Tokens; user: User }> {
     const emailExist: User = await this.userService
       .findOne(dto.email)
       .catch((error) => {
@@ -67,7 +69,8 @@ export class AuthService {
       });
 
       await this.emailService.sendActivationEmail(user.email, code);
-      return await this.generateTokens(user, agent);
+      const tokens = await this.generateTokens(user, agent);
+      return { user, tokens };
     }
 
     if (nicknameExist) {
@@ -92,10 +95,13 @@ export class AuthService {
     await this.emailService.sendActivationEmail(user.email, code);
     const tokens = await this.generateTokens(user, agent);
 
-    return tokens;
+    return { tokens, user };
   }
 
-  async login(dto: LoginDto, agent: string): Promise<Tokens> {
+  async login(
+    dto: LoginDto,
+    agent: string,
+  ): Promise<{ tokens: Tokens; user: User }> {
     const user: User = await this.userService
       .findOne(dto.email, true)
       .catch((error) => {
@@ -107,21 +113,23 @@ export class AuthService {
       throw new UnauthorizedException('Неправильный email или пароль');
     }
 
-    return await this.generateTokens(user, agent);
+    const tokens = await this.generateTokens(user, agent);
+    return { tokens, user };
   }
-
-  // verifyAccessToken(accessToken: string) {
-  //   return this.jwtService.verify(accessToken);
-  // }
 
   async deleteRefreshToken(token: string) {
     return this.databaseService.token.delete({ where: { token } });
   }
 
-  async refreshTokens(refreshToken: string, agent: string): Promise<Tokens> {
-    const token = await this.databaseService.token.delete({
+  async refreshTokens(
+    refreshToken: string,
+    agent: string,
+  ): Promise<{ tokens: Tokens; user: User }> {
+    const _token = await this.databaseService.token.findFirst({
       where: { token: refreshToken },
     });
+    console.log('asd', _token);
+    const token = await this.deleteRefreshToken(refreshToken);
 
     if (!token || new Date(token.exp) < new Date()) {
       throw new UnauthorizedException();
@@ -130,18 +138,21 @@ export class AuthService {
     const user = await this.userService.findOne(token.userId);
 
     const tokens = await this.generateTokens(user, agent);
-    return tokens;
+    return { tokens, user };
   }
 
   async activate(code: string) {
     const user = await this.userService.findOne(code);
 
     if (!user) {
-      throw new UnauthorizedException("The user doesn't exist");
+      return null;
     }
 
-    const JwtPayload = this.jwtService.verify(code);
-    console.log(JwtPayload);
+    try {
+      this.jwtService.verify(code);
+    } catch (e) {
+      return null;
+    }
 
     return await this.databaseService.user.update({
       where: { id: user.id },
@@ -218,14 +229,23 @@ export class AuthService {
   }
 
   private createActivationCode() {
-    // const code = this.jwtService.sign(
-    //   { code: 'код активации' },
-    //   {
-    //     expiresIn: this.configService.get('JWT_EXP'),
-    //     secret: this.configService.get('JWT_SECRET'),
-    //   },
-    // );
+    const code = this.jwtService.sign(
+      { code: 'код активации' },
+      {
+        secret: this.configService.get('JWT_SECRET'),
+      },
+    );
 
-    return 'code';
+    return code;
+  }
+
+  async sendActivateMail(email: string) {
+    const user = await this.userService.findOne(email);
+    if (user.isActivated) {
+      throw new ConflictException('Профиль уже активирован');
+    }
+    const activationCode = this.createActivationCode();
+    await this.userService.update({ email, activationCode });
+    await this.emailService.sendActivationEmail(email, activationCode);
   }
 }
