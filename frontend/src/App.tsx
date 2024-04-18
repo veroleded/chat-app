@@ -6,7 +6,6 @@ import { LoginForm } from './components/Login/LoginForm';
 import Activate from './pages/Activate/Activate';
 import Main from './pages/Main/Main';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import { useAppStore } from './store.ts/store-provider';
 import { RegistrationForm } from './components/Registration/Registration-form';
 import Profile from './components/MainAside/Profile/Profile';
 
@@ -40,8 +39,6 @@ const router = createBrowserRouter([
 ]);
 
 const App = observer(() => {
-  const { authStore } = useAppStore();
-
   return (
     <div>
       <RouterProvider router={router} />

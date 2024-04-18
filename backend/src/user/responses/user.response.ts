@@ -17,7 +17,10 @@ export class UserResponse implements User {
   provider: $Enums.Provider;
 
   createdAt: Date;
+
+  @Exclude()
   updatedAt: Date;
+
   roles: $Enums.Roles[];
 
   @Exclude()

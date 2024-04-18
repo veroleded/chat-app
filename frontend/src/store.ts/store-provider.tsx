@@ -1,13 +1,16 @@
 import { ReactNode, createContext, useContext } from 'react';
 import { observer } from 'mobx-react-lite';
 import AuthStore from './auth-store';
+import UserStore from './user-store';
 
 interface IStore {
   authStore: AuthStore;
+  userStore: UserStore;
 }
 
 const store = {
   authStore: new AuthStore(),
+  userStore: new UserStore(),
 };
 
 const Context = createContext<IStore>(store);

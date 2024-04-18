@@ -26,7 +26,6 @@ const validationSchema = Yup.object().shape({
 
 export const RegistrationForm = observer(() => {
   const { authStore } = useAppStore();
-  const [error, setError] = useState<string | null>(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const navigate = useNavigate();
 
@@ -34,13 +33,9 @@ export const RegistrationForm = observer(() => {
     initialValues: { email: '', password: '', confirmPassword: '', nickname: '' },
     validationSchema,
     onSubmit: async ({ email, password, nickname }) => {
-      setError(null);
       await authStore.registration(email, nickname, password);
       if (authStore.isAuth) {
-        setError(null);
         navigate('/activate');
-      } else {
-        setError(authStore.error);
       }
     },
     validateOnBlur: formSubmitted,
@@ -135,7 +130,7 @@ export const RegistrationForm = observer(() => {
             {formik.errors.confirmPassword && (
               <div className='text-red-500'>{formik.errors.confirmPassword}</div>
             )}
-            {error && <p className='mx-auto text-red-500 text-center mt-5'>{error}</p>}
+            {authStore.error && <p className='mx-auto text-red-500 text-center mt-5'>{authStore.error}</p>}
           </div>
 
           <button

@@ -13,6 +13,7 @@ export class JwtAuthGuard extends AuthGuard('jwt') implements CanActivate {
   canActivate(
     ctx: ExecutionContext,
   ): boolean | Promise<boolean> | Observable<boolean> {
+    console.log('guard');
     const _isPublic = isPublic(ctx, this.reflector);
     if (_isPublic) {
       return true;

@@ -116,6 +116,7 @@ export class AuthController {
     @Res() res: Response,
     @UserAgent() agent: string,
   ) {
+    console.log('refresh');
     if (!refreshToken) {
       throw new UnauthorizedException();
     }

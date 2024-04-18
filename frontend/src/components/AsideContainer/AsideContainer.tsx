@@ -22,7 +22,7 @@ const AsideContainer = ({ children, headerName }: Props) => {
   return (
     <div className={`h-screen w-full absolute z-10 bg-neutral-200 ${isCLose ? 'slideOut' : 'slideIn'}`}>
       <header className='w-full p-3 flex items-center justify-between bg-blue-900 text-gray-200'>
-        <a onClick={handleClick}>
+        <a onClick={handleClick} className=' cursor-pointer'>
           <IoIosArrowRoundBack size={45} />
         </a>
         <h1 className='text-xl'>{headerName}</h1>

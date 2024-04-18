@@ -3,13 +3,14 @@ import { makeAutoObservable } from 'mobx';
 import { AxiosError } from 'axios';
 
 import AuthService from '../services/auth-service';
-import { User } from '../models/Responses/User';
+import { CurrentUser, User } from '../models/User';
+import UserService from '../services/user-service';
 
 export default class AuthStore {
   isAuth = false;
   isLoading = false;
-  error: string | null = null;
-  user: User | null = null;
+  error?: string;
+  user?: User;
 
   constructor() {
     makeAutoObservable(this);
@@ -19,8 +20,12 @@ export default class AuthStore {
     this.isAuth = bool;
   }
 
-  setError(errorDescription: string | null) {
+  setError(errorDescription: string) {
     this.error = errorDescription;
+  }
+
+  deleteError() {
+    this.error = undefined;
   }
 
   setLoading(bool: boolean) {
@@ -32,7 +37,7 @@ export default class AuthStore {
   }
 
   deleteUser() {
-    this.user = null;
+    this.user = undefined;
   }
 
   async login(email: string, password: string) {
@@ -46,14 +51,14 @@ export default class AuthStore {
       this.setAuth(true);
     } catch (e) {
       if (e instanceof AxiosError) {
-        console.log(e);
+        console.log('auth-store, login', e);
         if (e.response?.data.statusCode === 500) {
           this.setError('Что-то пошло не так, повторите попытку');
         } else {
           this.setError(e.response?.data.message);
         }
       } else {
-        console.log(e);
+        console.log('auth-store, login', e);
       }
     }
     this.setLoading(false);
@@ -71,7 +76,7 @@ export default class AuthStore {
       this.setAuth(true);
     } catch (e) {
       if (e instanceof AxiosError) {
-        console.log(e);
+        console.log('auth-store, registration', e);
         if (e.response?.data.statusCode === 500) {
           this.setError('Что-то пошло не так, повторите попытку');
         } else {
@@ -112,7 +117,7 @@ export default class AuthStore {
       this.setAuth(true);
     } catch (e) {
       if (e instanceof AxiosError) {
-        console.log(e);
+        console.log('auth-store, checkAuth', e);
       } else {
         console.log(e);
       }
@@ -138,5 +143,17 @@ export default class AuthStore {
     }
 
     this.setLoading(false);
+  }
+
+  async updateCurrentUser(payload: Partial<CurrentUser> | { password: string }) {
+    this.setLoading(true);
+    try {
+      const { data } = await UserService.updateCurrentUser(payload);
+      this.setUser(data);
+      this.setLoading(false);
+    } catch (e) {
+      console.log('auth-store, updateCurrentUser', e);
+      this.setLoading(false);
+    }
   }
 }

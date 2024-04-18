@@ -11,7 +11,7 @@ const Activate = observer(() => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    authStore.setError(null);
+    authStore.deleteError();
     if (authStore.user?.isActivated) {
       navigate('/main');
     }

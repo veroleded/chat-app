@@ -12,6 +12,7 @@ const Welcome = observer(() => {
   useEffect(() => {
     const checkAuth = async () => {
       if (localStorage.getItem('token')) {
+        console.log(localStorage.getItem('token'));
         await authStore.checkAuth();
       }
       if (authStore.isAuth) {
@@ -21,7 +22,6 @@ const Welcome = observer(() => {
           navigate('activate');
         }
       }
-      console.log(authStore);
     };
     checkAuth();
   }, []);

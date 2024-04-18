@@ -1,13 +1,14 @@
-import { User } from '@prisma/client';
+import { User, Roles } from '@prisma/client';
 class UserInAuthResponse {
   id: string;
   email: string;
   name: string;
   lastname: string;
   nickname: string;
-  roles: string[];
+  roles: Roles[];
   description: string;
   birthday: Date;
+  createAt: Date;
 
   isActivated: boolean;
   isBlocked: boolean;
@@ -16,6 +17,7 @@ class UserInAuthResponse {
     this.id = user.id;
     this.email = user.email;
     this.name = user.name;
+    this.createAt = user.createdAt;
     this.lastname = user.lastname;
     this.nickname = user.nickname;
     this.roles = user.roles;

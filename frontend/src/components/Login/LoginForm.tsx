@@ -18,7 +18,6 @@ const validationSchema = Yup.object().shape({
 
 export const LoginForm = observer(() => {
   const { authStore } = useAppStore();
-  const [error, setError] = useState<string | null>(null);
   const [formSubmitted, setFormSubmitted] = useState(false);
   const navigate = useNavigate();
 
@@ -29,18 +28,13 @@ export const LoginForm = observer(() => {
     initialValues: { email: '', password: '' },
     validationSchema,
     onSubmit: async ({ email, password }) => {
-      setError(null);
-
       await authStore.login(email, password);
 
       if (authStore.isAuth) {
-        setError(null);
         if (authStore.user?.isActivated) {
-          navigate('/main');
+          navigate('/chat');
         }
         navigate('/activate');
-      } else {
-        setError(authStore.error);
       }
     },
     validateOnBlur: formSubmitted,
@@ -67,7 +61,7 @@ export const LoginForm = observer(() => {
   );
 
   return (
-    <Modal close={() => navigate('/')}>
+    <Modal close={() => navigate('/welcome')}>
       <div className='flex flex-col items-center h-full py-10'>
         <h2 className='text-2xl md:text-3xl text-center font-bold mb-4'>Войти в VeroledChat</h2>
         <Button
@@ -124,7 +118,7 @@ export const LoginForm = observer(() => {
               value={formik.values.password}
             />
             {formik.errors.password && <div className='text-red-500'>{formik.errors.password}</div>}
-            {error && <p className='mx-auto text-red-500 text-center mt-5'>{error}</p>}
+            {authStore.error && <p className='mx-auto text-red-500 text-center mt-5'>{authStore.error}</p>}
           </div>
 
           <button

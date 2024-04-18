@@ -7,7 +7,8 @@ import {
   NotFoundException,
   Param,
   ParseUUIDPipe,
-  Put,
+  Patch,
+  UnauthorizedException,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -22,7 +23,7 @@ export class UserController {
 
   @UseInterceptors(ClassSerializerInterceptor)
   @Get(':idOrEmail')
-  async findOne(@Param('idOrEmail') idOrEmail: string) {
+  async getOne(@Param('idOrEmail') idOrEmail: string) {
     const user = await this.userService.findOne(idOrEmail);
 
     if (!user || !user.isActivated) {
@@ -33,7 +34,22 @@ export class UserController {
   }
 
   @UseInterceptors(ClassSerializerInterceptor)
-  @Put()
+  @Get()
+  async getCurrentUser(@CurrentUser() payload: JwtPayload) {
+    if (payload) {
+      throw new UnauthorizedException();
+    }
+    const user = await this.userService.findOne(payload.id);
+
+    if (!user) {
+      throw new NotFoundException('User is not found');
+    }
+
+    return new UserResponse(user);
+  }
+
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Patch()
   async updateCurrentUser(
     @CurrentUser() currentUser: JwtPayload,
     @Body() payload: Partial<User>,
