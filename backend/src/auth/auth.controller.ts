@@ -111,6 +111,7 @@ export class AuthController {
   }
 
   @Get('refresh')
+  @Public()
   async refreshTokens(
     @Cookies(REFRESH_TOKEN) refreshToken: string,
     @Res() res: Response,
