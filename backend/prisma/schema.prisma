@@ -22,6 +22,7 @@ model User {
   name           String?
   lastname       String?
   password       String?
+  avatar         String?
   provider       Provider?
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")

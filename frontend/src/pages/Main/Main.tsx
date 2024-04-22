@@ -4,10 +4,9 @@ import Chat from '../../components/MainChat/Chat';
 import { useAppStore } from '../../store.ts/store-provider';
 import { useNavigate } from 'react-router-dom';
 import { observer } from 'mobx-react-lite';
-import Loading from '../../components/Loading';
 
 const Main = observer(() => {
-  const [chatIsOpen, setChatIsOpen] = useState(false);
+  const [chatIsOpen, setChatIsOpen] = useState(true);
   const [wight, setWight] = useState(window.innerWidth);
   const { authStore } = useAppStore();
   const navigate = useNavigate();
@@ -33,9 +32,7 @@ const Main = observer(() => {
     return () => window.removeEventListener('resize', updateWight);
   });
 
-  return authStore.isLoading ? (
-    <Loading />
-  ) : (
+  return (
     <div className='font-sans flex flex-col md:flex-row h-screen'>
       <Aside chatIsOpen={chatIsOpen} wight={wight} />
       {chatIsOpen && wight >= 768 && <Chat />}

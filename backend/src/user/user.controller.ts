@@ -8,7 +8,9 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Post,
   UnauthorizedException,
+  UploadedFile,
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -16,6 +18,7 @@ import { UserResponse } from './responses';
 import { CurrentUser } from '@common/decorators';
 import { JwtPayload } from '@auth/interfaces';
 import { User } from '@prisma/client';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('user')
 export class UserController {
@@ -71,5 +74,19 @@ export class UserController {
     const deletedUser = await this.userService.delete(id, user);
 
     return new UserResponse(deletedUser);
+  }
+
+  @Post('postAvatar')
+  @UseInterceptors(
+    FileInterceptor('avatar', {
+      storage: './uploads/images/avatars',
+      preservePath: true,
+    }),
+  )
+  async setAvatar(
+    @UploadedFile() file: Express.Multer.File,
+    @CurrentUser() payload: JwtPayload,
+  ) {
+    console.log(file);
   }
 }

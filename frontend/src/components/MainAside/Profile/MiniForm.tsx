@@ -2,12 +2,13 @@ import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { useAppStore } from '../../../store.ts/store-provider';
 import { User } from '../../../models/User';
-import { IoMdCheckmark } from 'react-icons/io';
-import { useState } from 'react';
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
+import { Dispatch, SetStateAction, useState } from 'react';
 import classNames from 'classnames';
 
 type Props = {
   type: 'name' | 'nickname' | 'lastname' | 'description';
+  close: Dispatch<SetStateAction<'name' | 'nickname' | 'lastname' | 'description' | 'birthday' | null>>;
 };
 
 const validationSchemas = {
@@ -31,7 +32,7 @@ const validationSchemas = {
   }),
 };
 
-const MiniForm = ({ type }: Props) => {
+const MiniForm = ({ type, close }: Props) => {
   const { authStore } = useAppStore();
   const { user } = authStore;
   const initialValues = { [type]: (user as User)[type] ?? '' };
@@ -46,6 +47,7 @@ const MiniForm = ({ type }: Props) => {
     validationSchema: validationSchemas[type],
     onSubmit: async (values) => {
       await authStore.updateCurrentUser(values);
+      close(null);
     },
   });
 
@@ -102,6 +104,9 @@ const MiniForm = ({ type }: Props) => {
       </span>
       <button type='submit' disabled={error}>
         <IoMdCheckmark size={25} className='text-indigo-800' />
+      </button>
+      <button onClick={() => close(null)}>
+        <IoMdClose size={25} className='text-indigo-800' />
       </button>
     </form>
   );

@@ -62,7 +62,7 @@ export const RegistrationForm = observer(() => {
   );
 
   return (
-    <Modal close={() => navigate('/')}>
+    <Modal>
       <div className='flex flex-col items-center h-full py-5'>
         <h2 className='text-2xl md:text-3xl text-center font-bold mb-4'>Создайте учетную запись</h2>
         <form onSubmit={handleSubmit} className='w-full space-y-4'>

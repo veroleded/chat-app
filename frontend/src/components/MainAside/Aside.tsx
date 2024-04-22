@@ -2,12 +2,13 @@ import React, { useEffect, useState } from 'react';
 import Header from './Header/Header';
 import Chat from '../MainChat/Chat';
 import { Outlet } from 'react-router-dom';
+import { observer } from 'mobx-react-lite';
 
 type Props = {
   chatIsOpen: boolean;
   wight: number;
 };
-const Aside = ({ chatIsOpen, wight }: Props) => {
+const Aside = observer(({ chatIsOpen, wight }: Props) => {
   const [tab, setTab] = useState<'chats' | 'profile' | 'chat' | 'contacts'>('chats');
 
   useEffect(() => {
@@ -22,6 +23,6 @@ const Aside = ({ chatIsOpen, wight }: Props) => {
       {chatIsOpen && wight < 768 && <Chat />}
     </aside>
   );
-};
+});
 
 export default Aside;

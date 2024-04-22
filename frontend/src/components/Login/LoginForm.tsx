@@ -61,7 +61,7 @@ export const LoginForm = observer(() => {
   );
 
   return (
-    <Modal close={() => navigate('/welcome')}>
+    <Modal>
       <div className='flex flex-col items-center h-full py-10'>
         <h2 className='text-2xl md:text-3xl text-center font-bold mb-4'>Войти в VeroledChat</h2>
         <Button

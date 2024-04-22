@@ -8,6 +8,9 @@ import Main from './pages/Main/Main';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import { RegistrationForm } from './components/Registration/Registration-form';
 import Profile from './components/MainAside/Profile/Profile';
+import { useAppStore } from './store.ts/store-provider';
+import Contacts from './components/MainAside/Contacts/Contacts';
+import PhotoEditor from './components/MainAside/Profile/PhotoEditor/PhotoEditor';
 
 const router = createBrowserRouter([
   { path: '*', element: <NotFound /> },
@@ -33,16 +36,19 @@ const router = createBrowserRouter([
       {
         path: 'profile',
         element: <Profile />,
+        children: [{ path: 'photo', element: <PhotoEditor /> }],
       },
+      { path: 'contacts', element: <Contacts /> },
     ],
   },
 ]);
 
 const App = observer(() => {
+  const { authStore } = useAppStore();
   return (
     <div>
       <RouterProvider router={router} />
-      {/* <button onClick={() => authStore.logout()}>выйти</button> */}
+      <button onClick={() => authStore.logout()}>выйти</button>
     </div>
   );
 });

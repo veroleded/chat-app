@@ -9,7 +9,7 @@ class UserInAuthResponse {
   description: string;
   birthday: Date;
   createAt: Date;
-
+  avatar: string;
   isActivated: boolean;
   isBlocked: boolean;
 
@@ -25,6 +25,7 @@ class UserInAuthResponse {
     this.isBlocked = user.isBlocked;
     this.birthday = user.birthday;
     this.description = user.description;
+    this.avatar = user.avatar;
   }
 }
 

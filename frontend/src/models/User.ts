@@ -8,6 +8,7 @@ export interface User {
   isActivated: boolean;
   description: string;
   birthday: string;
+  avatar: string;
 }
 
 export interface CurrentUser extends User {

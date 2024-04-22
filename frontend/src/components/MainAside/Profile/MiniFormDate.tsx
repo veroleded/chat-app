@@ -1,6 +1,6 @@
 import { useFormik } from 'formik';
-import React, { useState } from 'react';
-import { IoMdCheckmark } from 'react-icons/io';
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import { IoMdCheckmark, IoMdClose } from 'react-icons/io';
 import * as Yup from 'yup';
 import { useAppStore } from '../../../store.ts/store-provider';
 import classNames from 'classnames';
@@ -9,7 +9,11 @@ const validationSchema = Yup.object().shape({
   birthday: Yup.date().max(new Date()),
 });
 
-const MiniFormDate = () => {
+type Props = {
+  close: Dispatch<SetStateAction<'name' | 'nickname' | 'lastname' | 'description' | 'birthday' | null>>;
+};
+
+const MiniFormDate = ({ close }: Props) => {
   const { authStore } = useAppStore();
   const formik = useFormik({
     initialValues: { birthday: authStore.user?.birthday },
@@ -17,6 +21,7 @@ const MiniFormDate = () => {
     onSubmit: async (values) => {
       const normalizeDate = new Date(values.birthday as string).toISOString();
       await authStore.updateCurrentUser({ birthday: normalizeDate });
+      close(null);
     },
   });
 
@@ -48,6 +53,9 @@ const MiniFormDate = () => {
       />
       <button type='submit' disabled={error}>
         <IoMdCheckmark size={25} className='text-indigo-800' />
+      </button>
+      <button onClick={() => close(null)}>
+        <IoMdClose size={25} className='text-indigo-800' />
       </button>
     </form>
   );
